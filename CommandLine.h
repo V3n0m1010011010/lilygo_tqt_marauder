@@ -16,7 +16,6 @@
   #include "SDInterface.h"
 #endif
 #include "settings.h"
-#include "LedInterface.h"
 
 #ifdef HAS_SCREEN
   extern MenuFunctions menu_function_obj;
@@ -24,12 +23,7 @@
 #endif
 
 extern WiFiScan wifi_scan_obj;
-//extern Web web_obj;
-#ifdef HAS_SD
-  extern SDInterface sd_obj;
-#endif
 extern Settings settings_obj;
-extern LedInterface led_obj;
 extern LinkedList<AccessPoint>* access_points;
 extern LinkedList<ssid>* ssids;
 extern LinkedList<Station>* stations;

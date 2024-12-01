@@ -749,42 +749,6 @@ void MenuFunctions::main(uint32_t currentTime)
 
   #ifdef HAS_BUTTONS
     #if !(defined(MARAUDER_V6) || defined(MARAUDER_V6_1))
-      #ifndef MARAUDER_M5STICKC
-        if (u_btn.justPressed()){
-          if ((wifi_scan_obj.currentScanMode == WIFI_SCAN_OFF) ||
-              (wifi_scan_obj.currentScanMode == OTA_UPDATE)) {
-            if (current_menu->selected > 0) {
-              current_menu->selected--;
-              // Page up
-              if (current_menu->selected < this->menu_start_index) {
-                this->buildButtons(current_menu, current_menu->selected);
-                this->displayCurrentMenu(current_menu->selected);
-              }
-              this->buttonSelected(current_menu->selected - this->menu_start_index, current_menu->selected);
-              if (!current_menu->list->get(current_menu->selected + 1).selected)
-                this->buttonNotSelected(current_menu->selected + 1 - this->menu_start_index, current_menu->selected + 1);
-            }
-            // Loop to end
-            else {
-              current_menu->selected = current_menu->list->size() - 1;
-              if (current_menu->selected >= BUTTON_SCREEN_LIMIT) {
-                this->buildButtons(current_menu, current_menu->selected + 1 - BUTTON_SCREEN_LIMIT);
-                this->displayCurrentMenu(current_menu->selected + 1 - BUTTON_SCREEN_LIMIT);
-              }
-              this->buttonSelected(current_menu->selected, current_menu->selected);
-              if (!current_menu->list->get(0).selected)
-                this->buttonNotSelected(0, this->menu_start_index);
-            }
-          }
-          else if ((wifi_scan_obj.currentScanMode == WIFI_PACKET_MONITOR) ||
-                  (wifi_scan_obj.currentScanMode == WIFI_SCAN_EAPOL)) {
-            if (wifi_scan_obj.set_channel < 14)
-              wifi_scan_obj.changeChannel(wifi_scan_obj.set_channel + 1);
-            else
-              wifi_scan_obj.changeChannel(1);
-          }
-        }
-      #endif
       if (d_btn.justPressed()){
         if ((wifi_scan_obj.currentScanMode == WIFI_SCAN_OFF) ||
             (wifi_scan_obj.currentScanMode == OTA_UPDATE)) {
@@ -940,14 +904,14 @@ void MenuFunctions::updateStatusBar()
   
   uint16_t the_color; 
 
+
+  // GPS Stuff
+  #ifdef HAS_GPS
   if (this->old_gps_sat_count != gps_obj.getNumSats()) {
     this->old_gps_sat_count = gps_obj.getNumSats();
     display_obj.tft.fillRect(0, 0, 240, STATUS_BAR_WIDTH, STATUSBAR_COLOR);
     status_changed = true;
   }
-
-  // GPS Stuff
-  #ifdef HAS_GPS
     if (gps_obj.getGpsModuleStatus()) {
       if (gps_obj.getFixStatus())
         the_color = TFT_GREEN;
@@ -1363,9 +1327,6 @@ void MenuFunctions::RunSetup()
   this->addNodes(&wifiMenu, text_table1[31], TFT_YELLOW, NULL, SNIFFERS, [this]() {
     this->changeMenu(&wifiSnifferMenu);
   });
-  this->addNodes(&wifiMenu, "Wardriving", TFT_GREEN, NULL, BEACON_SNIFF, [this]() {
-    this->changeMenu(&wardrivingMenu);
-  });
   this->addNodes(&wifiMenu, text_table1[32], TFT_RED, NULL, ATTACKS, [this]() {
     this->changeMenu(&wifiAttackMenu);
   });
@@ -1443,10 +1404,6 @@ void MenuFunctions::RunSetup()
   #endif
 
   // Build Wardriving menu
-  wardrivingMenu.parentMenu = &wifiMenu; // Main Menu is second menu parent
-  this->addNodes(&wardrivingMenu, text09, TFT_LIGHTGREY, NULL, 0, [this]() {
-    this->changeMenu(wardrivingMenu.parentMenu);
-  });
   #ifdef HAS_GPS
     if (gps_obj.getGpsModuleStatus()) {
       this->addNodes(&wardrivingMenu, "Wardrive", TFT_GREEN, NULL, BEACON_SNIFF, [this]() {
@@ -1588,16 +1545,6 @@ void MenuFunctions::RunSetup()
               this->displayCurrentMenu();
             }
             #ifndef MARAUDER_M5STICKC
-              if (u_btn.justPressed()) {
-                if (evil_portal_obj.selected_html_index < evil_portal_obj.html_files->size() - 1)
-                  evil_portal_obj.selected_html_index++;
-                else
-                  evil_portal_obj.selected_html_index = 0;
-
-                this->htmlMenu.list->set(0, MenuNode{evil_portal_obj.html_files->get(evil_portal_obj.selected_html_index), false, TFT_CYAN, 0, NULL, true, NULL});
-                this->buildButtons(&htmlMenu, 0, evil_portal_obj.html_files->get(evil_portal_obj.selected_html_index));
-                this->displayCurrentMenu();
-              }
             #endif
             if (c_btn.justPressed()) {
               if (evil_portal_obj.html_files->get(evil_portal_obj.selected_html_index) != "Back") {
@@ -1973,16 +1920,6 @@ void MenuFunctions::RunSetup()
                 // Start button loop
                 while(true) {
                   #ifndef MARAUDER_M5STICKC
-                    if (u_btn.justPressed()) {
-                      if (sd_file_index > 0)
-                        sd_file_index--;
-                      else
-                        sd_file_index = sd_obj.sd_files->size() - 1;
-
-                      this->sdDeleteMenu.list->set(0, MenuNode{sd_obj.sd_files->get(sd_file_index), false, TFT_CYAN, 0, NULL, true, NULL});
-                      this->buildButtons(&sdDeleteMenu);
-                      this->displayCurrentMenu();
-                    }
                   #endif
                   if (d_btn.justPressed()) {
                     if (sd_file_index < sd_obj.sd_files->size() - 1)
